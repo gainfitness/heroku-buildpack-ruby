@@ -96,6 +96,7 @@ class LanguagePack::Ruby < LanguagePack::Base
         create_database_yml
         install_binaries
         run_assets_precompile_rake_task
+        run_compile_tasks
       end
       super
     end
@@ -688,6 +689,17 @@ params = CGI.parse(uri.query || "")
       else
         log "assets_precompile", :status => "failure"
         error "Precompiling assets failed."
+      end
+    end
+  end
+
+  def run_compile_tasks
+    tasks = ENV['COMPILE_TASKS']
+    if tasks =~ /\S/
+      puts "Running: rake #{tasks}"
+      pipe("env PATH=$PATH:bin bundle exec rake #{tasks} 2>&1")
+      unless $?.success?
+        error "Compile tasks failed."
       end
     end
   end
